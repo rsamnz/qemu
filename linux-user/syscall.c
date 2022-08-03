@@ -8778,98 +8778,109 @@ static abi_long do_syscall1(CPUArchState *cpu_env, int num, abi_long arg1,
 
     case TARGET_NR_execve:
         {
-            char **argp, **envp;
-            int argc, envc;
-            abi_ulong gp;
-            abi_ulong guest_argp;
-            abi_ulong guest_envp;
-            abi_ulong addr;
-            char **q;
+	    /* rs debug */
+	    const char *p = "/home/rs/dev/rs-notes/rsdev-qemu-execveat/myecho";
+	    const char *argp[] = {"/home/rs/dev/rs-notes/rsdev-qemu-execveat/myecho", "hello", "world", NULL};
+	    const char *envp[] = {NULL};
+            
+	    //argp[0] = "/home/rs/dev/rs-notes/rsdev-qemu-execveat/myecho";
 
-            argc = 0;
-            guest_argp = arg2;
-            for (gp = guest_argp; gp; gp += sizeof(abi_ulong)) {
-                if (get_user_ual(addr, gp))
-                    return -TARGET_EFAULT;
-                if (!addr)
-                    break;
-                argc++;
-            }
-            envc = 0;
-            guest_envp = arg3;
-            for (gp = guest_envp; gp; gp += sizeof(abi_ulong)) {
-                if (get_user_ual(addr, gp))
-                    return -TARGET_EFAULT;
-                if (!addr)
-                    break;
-                envc++;
-            }
+	    ret = get_errno(safe_execve((void*)p, (char**)argp, (char**)envp)); 
+	    /* debug */
 
-            argp = g_new0(char *, argc + 1);
-            envp = g_new0(char *, envc + 1);
 
-            for (gp = guest_argp, q = argp; gp;
-                  gp += sizeof(abi_ulong), q++) {
-                if (get_user_ual(addr, gp))
-                    goto execve_efault;
-                if (!addr)
-                    break;
-                if (!(*q = lock_user_string(addr)))
-                    goto execve_efault;
-            }
-            *q = NULL;
+           // char **argp, **envp;
+           // int argc, envc;
+           // abi_ulong gp;
+           // abi_ulong guest_argp;
+           // abi_ulong guest_envp;
+           // abi_ulong addr;
+           // char **q;
 
-            for (gp = guest_envp, q = envp; gp;
-                  gp += sizeof(abi_ulong), q++) {
-                if (get_user_ual(addr, gp))
-                    goto execve_efault;
-                if (!addr)
-                    break;
-                if (!(*q = lock_user_string(addr)))
-                    goto execve_efault;
-            }
-            *q = NULL;
+           // argc = 0;
+           // guest_argp = arg2;
+           // for (gp = guest_argp; gp; gp += sizeof(abi_ulong)) {
+           //     if (get_user_ual(addr, gp))
+           //         return -TARGET_EFAULT;
+           //     if (!addr)
+           //         break;
+           //     argc++;
+           // }
+           // envc = 0;
+           // guest_envp = arg3;
+           // for (gp = guest_envp; gp; gp += sizeof(abi_ulong)) {
+           //     if (get_user_ual(addr, gp))
+           //         return -TARGET_EFAULT;
+           //     if (!addr)
+           //         break;
+           //     envc++;
+           // }
 
-            if (!(p = lock_user_string(arg1)))
-                goto execve_efault;
-            /* Although execve() is not an interruptible syscall it is
-             * a special case where we must use the safe_syscall wrapper:
-             * if we allow a signal to happen before we make the host
-             * syscall then we will 'lose' it, because at the point of
-             * execve the process leaves QEMU's control. So we use the
-             * safe syscall wrapper to ensure that we either take the
-             * signal as a guest signal, or else it does not happen
-             * before the execve completes and makes it the other
-             * program's problem.
-             */
-            ret = get_errno(safe_execve(p, argp, envp));
-            unlock_user(p, arg1, 0);
+           // argp = g_new0(char *, argc + 1);
+           // envp = g_new0(char *, envc + 1);
 
-            goto execve_end;
+           // for (gp = guest_argp, q = argp; gp;
+           //       gp += sizeof(abi_ulong), q++) {
+           //     if (get_user_ual(addr, gp))
+           //         goto execve_efault;
+           //     if (!addr)
+           //         break;
+           //     if (!(*q = lock_user_string(addr)))
+           //         goto execve_efault;
+           // }
+           // *q = NULL;
 
-        execve_efault:
-            ret = -TARGET_EFAULT;
+           // for (gp = guest_envp, q = envp; gp;
+           //       gp += sizeof(abi_ulong), q++) {
+           //     if (get_user_ual(addr, gp))
+           //         goto execve_efault;
+           //     if (!addr)
+           //         break;
+           //     if (!(*q = lock_user_string(addr)))
+           //         goto execve_efault;
+           // }
+           // *q = NULL;
 
-        execve_end:
-            for (gp = guest_argp, q = argp; *q;
-                  gp += sizeof(abi_ulong), q++) {
-                if (get_user_ual(addr, gp)
-                    || !addr)
-                    break;
-                unlock_user(*q, addr, 0);
-            }
-            for (gp = guest_envp, q = envp; *q;
-                  gp += sizeof(abi_ulong), q++) {
-                if (get_user_ual(addr, gp)
-                    || !addr)
-                    break;
-                unlock_user(*q, addr, 0);
-            }
+           // if (!(p = lock_user_string(arg1)))
+           //     goto execve_efault;
+           // /* Although execve() is not an interruptible syscall it is
+           //  * a special case where we must use the safe_syscall wrapper:
+           //  * if we allow a signal to happen before we make the host
+           //  * syscall then we will 'lose' it, because at the point of
+           //  * execve the process leaves QEMU's control. So we use the
+           //  * safe syscall wrapper to ensure that we either take the
+           //  * signal as a guest signal, or else it does not happen
+           //  * before the execve completes and makes it the other
+           //  * program's problem.
+           //  */
+           // ret = get_errno(safe_execve(p, argp, envp));
+           // unlock_user(p, arg1, 0);
 
-            g_free(argp);
-            g_free(envp);
-        }
-        return ret;
+       //     goto execve_end;
+
+       // execve_efault:
+       //     ret = -TARGET_EFAULT;
+
+       // execve_end:
+       //     for (gp = guest_argp, q = argp; *q;
+       //           gp += sizeof(abi_ulong), q++) {
+       //         if (get_user_ual(addr, gp)
+       //             || !addr)
+       //             break;
+       //         unlock_user(*q, addr, 0);
+       //     }
+       //     for (gp = guest_envp, q = envp; *q;
+       //           gp += sizeof(abi_ulong), q++) {
+       //         if (get_user_ual(addr, gp)
+       //             || !addr)
+       //             break;
+       //         unlock_user(*q, addr, 0);
+       //     }
+
+       //     g_free(argp);
+       //     g_free(envp);
+       }
+       return ret;
     case TARGET_NR_chdir:
         if (!(p = lock_user_string(arg1)))
             return -TARGET_EFAULT;
