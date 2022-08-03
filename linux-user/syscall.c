@@ -630,6 +630,12 @@ safe_syscall4(pid_t, wait4, pid_t, pid, int *, status, int, options, \
 #endif
 safe_syscall5(int, waitid, idtype_t, idtype, id_t, id, siginfo_t *, infop, \
               int, options, struct rusage *, rusage)
+
+/* rs debug */
+safe_syscall5(int, execveat, int, dirfd, const char *, pathname, \
+	      const char **, argv, const char **, envp, int, flags)
+/* end */
+
 safe_syscall3(int, execve, const char *, filename, char **, argv, char **, envp)
 #if defined(TARGET_NR_select) || defined(TARGET_NR__newselect) || \
     defined(TARGET_NR_pselect6) || defined(TARGET_NR_pselect6_time64)
@@ -8753,6 +8759,23 @@ static abi_long do_syscall1(CPUArchState *cpu_env, int num, abi_long arg1,
         unlock_user(p, arg2, 0);
         return ret;
 #endif
+    case TARGET_NR_execveat:
+        printf("execveat is not implemented!\n");
+	printf("syscall number: %d\n", num);
+	printf("sizeof(abi_long): %lu \n", sizeof(abi_long));
+	 
+	int fd = open("/home/rs/dev/rs-notes/rsdev-qemu-execveat/myecho", \
+		      O_RDONLY);
+	const char *newargv[] = {NULL, "hello", "world", NULL};
+	const char *newenviron[] = {NULL};
+
+	// path to the echo executable
+	newargv[0] = "/home/rs/dev/rs-notes/rsdev-qemu-execveat/myecho";
+
+	ret = get_errno(safe_execveat(fd, "", newargv, newenviron, 0));
+
+	return ret;
+
     case TARGET_NR_execve:
         {
             char **argp, **envp;
