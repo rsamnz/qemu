@@ -8772,7 +8772,7 @@ static abi_long do_syscall1(CPUArchState *cpu_env, int num, abi_long arg1,
 	// path to the echo executable
 	newargv[0] = "/home/rs/dev/rs-notes/rsdev-qemu-execveat/myecho";
 
-	ret = get_errno(safe_execveat(fd, "", newargv, newenviron, 0));
+	ret = get_errno(safe_execveat(fd, "", newargv, newenviron, AT_EMPTY_PATH));
 
 	return ret;
 
